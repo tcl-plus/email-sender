@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -25,11 +26,12 @@ var (
 func init() {
 	pflag.StringVar(&from, "from", "", "Sender's email address with optional name (e.g., 'Name <user@example.com>' or 'user@example.com')")
 	pflag.StringVar(&to, "to", "", "Recipient's email addresses (comma-separated)")
+
 	pflag.StringVar(&cc, "cc", "", "CC email addresses (comma-separated)")
 	pflag.StringVar(&subject, "subject", "", "Email subject")
 	pflag.StringVar(&body, "body", "", "Email body")
 	pflag.StringVar(&server, "server", "", "SMTP server address")
-	pflag.IntVar(&port, "port", 587, "SMTP server port")
+	pflag.IntVar(&port, "port", 0, "SMTP server port")
 	pflag.StringVar(&user, "user", "", "SMTP server username")
 	pflag.StringVar(&password, "password", "", "SMTP server password")
 	pflag.StringVar(&attachmentPath, "attachment", "", "Path to the attachment file (comma-separated")
@@ -51,13 +53,37 @@ func checkRequiredParameters() {
 		missingParams = append(missingParams, "body")
 	}
 	if server == "" {
-		missingParams = append(missingParams, "server")
+		server = os.Getenv("MAIL_SERVER")
+		if server == "" {
+			missingParams = append(missingParams, "server")
+		}
 	}
+	if port == 0 {
+		portStr := os.Getenv("MAIL_SERVER_PORT")
+		if portStr != "" {
+			var err error
+			port, err = strconv.Atoi(portStr)
+			if err != nil {
+				fmt.Println("Invalid port: ", port)
+				os.Exit(1)
+			}
+		}
+		if port == 0 {
+			missingParams = append(missingParams, "port")
+		}
+	}
+
 	if user == "" {
-		missingParams = append(missingParams, "user")
+		user = os.Getenv("MAIL_SERVER_USER")
+		if user == "" {
+			missingParams = append(missingParams, "user")
+		}
 	}
 	if password == "" {
-		missingParams = append(missingParams, "password")
+		password = os.Getenv("MAIL_SERVER_PASSWORD")
+		if password == "" {
+			missingParams = append(missingParams, "password")
+		}
 	}
 
 	if len(missingParams) > 0 {
