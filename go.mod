@@ -1,4 +1,4 @@
-module github.com/tcl-plus/send-mail
+module github.com/tcl-plus/email-sender
 
 go 1.21
 
