@@ -64,7 +64,7 @@ func checkRequiredParameters() {
 			var err error
 			port, err = strconv.Atoi(portStr)
 			if err != nil {
-				fmt.Println("Invalid port: ", port)
+				fmt.Println("Invalid env MAIL_SERVER_PORT: ", portStr)
 				os.Exit(1)
 			}
 		}
